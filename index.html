@@ -3,129 +3,506 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DashSte — Calcolo investimenti</title>
-
-  <!-- Se vuoi puoi lasciare bootstrap, ma non serve -->
-  <!-- <link rel="stylesheet" href="bootstrap.min.css"> -->
-
-  <link rel="stylesheet" href="styles.css" />
+  <title>Ammortamento Enterprise • Mobile Dashboard (Offline v6)</title>
+  <link rel="stylesheet" href="./bootstrap.min.css">
+  <link rel="stylesheet" href="./styles.css">
 </head>
-
 <body>
-  <header class="topbar">
-    <div class="wrap topbar__inner">
+  <header class="appbar">
+    <div class="appbar-left">
+      <button class="iconbtn d-lg-none" id="btnDrawer" type="button" aria-label="Apri menu">
+        <span class="burger"></span>
+      </button>
       <div class="brand">
-        <div class="brand__dot"></div>
-        <div class="brand__txt">
-          <div class="brand__name">DashSte</div>
-          <div class="brand__sub">Calcolo investimenti</div>
-        </div>
+        <div class="brand-title">Ammortamento</div>
+        <div class="brand-sub">Enterprise • Offline</div>
       </div>
-
-      <div class="topbar__actions">
-        <button class="btnx btnx--ghost" type="button" id="btnReset">Reset</button>
-        <button class="btnx" type="button" id="btnCalcolaTop">Calcola</button>
-      </div>
+    </div>
+    <div class="appbar-right">
+      <span class="pill" id="statusText">Pronto</span>
+      <span class="pill mono" id="jsLoaded">• JS</span>
+      <span class="pill mono" id="ver">v6.0</span>
     </div>
   </header>
 
-  <main class="wrap">
-    <section class="hero reveal">
-      <h1>Calcolo investimenti, senza fronzoli.</h1>
-      <p>Inserisci i parametri a sinistra, leggi i risultati a destra. Mobile-first, veloce, pulito.</p>
-    </section>
+  <div class="drawer-backdrop d-lg-none" id="drawerBackdrop"></div>
 
-    <section class="grid">
-      <!-- INPUT -->
-      <section class="card reveal">
-        <div class="card__head">
-          <h2>Input</h2>
-          <p>Inserisci i dati e premi <b>Calcola</b>.</p>
-        </div>
+  <main class="shell">
+    <aside class="sidebar" id="drawer">
+      <div class="sidebar-head">
+        <div class="sidebar-title">Controlli</div>
+        <div class="sidebar-sub">Configura e ricalcola</div>
+      </div>
 
-        <div class="stack">
-          <label class="labelx" for="importo">Importo (€)</label>
-          <input class="inputx" type="number" id="importo" placeholder="es. 120000" />
+      <div class="seg" role="tablist" aria-label="Sezioni">
+        <button class="seg-btn active" data-tab="tab-main" type="button">Mutuo</button>
+        <button class="seg-btn" data-tab="tab-extra" type="button">Extra</button>
+        <button class="seg-btn" data-tab="tab-income" type="button">Redditi</button>
+        <button class="seg-btn" data-tab="tab-invest" type="button">Inv.</button>
+        <button class="seg-btn" data-tab="tab-scen" type="button">Scenari</button>
+        <button class="seg-btn" data-tab="tab-export" type="button">Export</button>
+      </div>
 
-          <label class="labelx" for="tasso">Tasso annuo (%)</label>
-          <input class="inputx" type="number" step="0.01" id="tasso" placeholder="es. 3.14" />
-
-          <label class="labelx" for="anni">Durata (anni)</label>
-          <input class="inputx" type="number" id="anni" placeholder="es. 30" />
-
-          <div class="row2">
+      <div class="panel active" id="tab-main">
+        <div class="cardx">
+          <div class="cardx-head">
             <div>
-              <label class="labelx" for="extra">Versamento extra (€)</label>
-              <input class="inputx" type="number" id="extra" placeholder="es. 200" />
+              <div class="cardx-title">Mutuo</div>
+              <div class="cardx-sub">Importo, tasso e durata</div>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div>
+              <label class="form-label" for="P">Importo finanziato (€)</label>
+              <input id="P" class="form-control" type="number" min="0" step="100" value="200000">
             </div>
             <div>
-              <label class="labelx" for="freq">Frequenza extra</label>
-              <select class="inputx" id="freq">
-                <option value="mensile">Mensile</option>
-                <option value="bimestrale">Bimestrale</option>
-                <option value="annuale">Annuale</option>
+              <label class="form-label" for="APR">Tasso annuo (%)</label>
+              <input id="APR" class="form-control" type="number" min="0" step="0.01" value="3.5">
+            </div>
+          </div>
+
+          <div class="grid2 mt-2">
+            <div>
+              <label class="form-label" for="Y">Durata (anni) 1–30</label>
+              <input id="Y" class="form-control" type="number" min="1" max="30" step="1" value="30">
+            </div>
+            <div>
+              <label class="form-label" for="m">Rate/anno</label>
+              <input id="m" class="form-control" type="number" min="1" step="1" value="12">
+            </div>
+          </div>
+
+          <div class="grid2 mt-2">
+            <div>
+              <label class="form-label" for="START">Data prima rata</label>
+              <input id="START" class="form-control" type="date">
+            </div>
+            <div>
+              <label class="form-label" for="MODE">Modalità extra</label>
+              <select id="MODE" class="form-select">
+                <option value="reduce_term" selected>Riduci DURATA</option>
+                <option value="reduce_payment">Riduci RATA</option>
               </select>
             </div>
           </div>
 
-          <div class="actions">
-            <button class="btnx btnx--ghost" type="button" id="btnEsempio">Esempio</button>
-            <button class="btnx" type="button" id="btnCalcola">Calcola</button>
+          <div class="btnrow mt-3">
+            <button id="btnCalc" class="btn btn-primary w-100" type="button">Ricalcola</button>
+            <div class="btnrow2 mt-2">
+              <button id="btnSave" class="btn btn-success w-100" type="button">Salva</button>
+              <button id="btnLoad" class="btn btn-ghost w-100" type="button">Carica</button>
+              <button id="btnReset" class="btn btn-ghost w-100" type="button">Reset</button>
+            </div>
           </div>
 
-          <div class="hint">
-            Pro tip: l’extra riduce soprattutto gli interessi nei primi anni.
-          </div>
-        </div>
-      </section>
-
-      <!-- RISULTATI -->
-      <aside class="card reveal">
-        <div class="card__head">
-          <h2>Risultati</h2>
-          <p>Output in tempo reale (dopo calcolo).</p>
+          <div id="err" class="alert alert-danger mt-3 d-none" role="alert"></div>
         </div>
 
-        <div class="kpis">
-          <div class="kpi">
-            <div class="kpi__label">Rata</div>
-            <div class="kpi__value" id="outRata">—</div>
+        <div class="hint">Suggerimento: su mobile usa la barra in basso o il menu per cambiare sezione.</div>
+      </div>
+
+      <div class="panel" id="tab-extra">
+        <div class="cardx">
+          <div class="cardx-head">
+            <div>
+              <div class="cardx-title">Extra</div>
+              <div class="cardx-sub">Abbattimenti e versamenti aggiuntivi</div>
+            </div>
           </div>
-          <div class="kpi">
-            <div class="kpi__label">Interessi totali</div>
-            <div class="kpi__value" id="outInteressi">—</div>
+
+          <div class="grid2">
+            <div>
+              <label class="form-label" for="EX">Extra annuo (€)</label>
+              <input id="EX" class="form-control" type="number" min="0" step="50" value="0">
+            </div>
+            <div>
+              <label class="form-label" id="EXM_LABEL" for="EXM">Mese/Periodo extra</label>
+              <input id="EXM" class="form-control" type="number" min="1" step="1" value="12">
+            </div>
           </div>
-          <div class="kpi">
-            <div class="kpi__label">Totale pagato</div>
-            <div class="kpi__value" id="outTotale">—</div>
+
+          <div class="grid2 mt-2">
+            <div>
+              <label class="form-label" for="EXY">Da anno n°</label>
+              <input id="EXY" class="form-control" type="number" min="1" step="1" value="1">
+            </div>
+            <div>
+              <label class="form-label" for="EXEND">Fino ad anno (0=sempre)</label>
+              <input id="EXEND" class="form-control" type="number" min="0" step="1" value="0">
+            </div>
           </div>
-          <div class="kpi kpi--hot">
-            <div class="kpi__label">Tempo stimato</div>
-            <div class="kpi__value" id="outTempo">—</div>
+
+          <div class="divider my-3"></div>
+
+          <div class="grid2">
+            <div>
+              <label class="form-label" for="EX_DATE">Data extra</label>
+              <input id="EX_DATE" class="form-control" type="date">
+            </div>
+            <div>
+              <label class="form-label" for="EX_AMT">Importo (€)</label>
+              <input id="EX_AMT" class="form-control" type="number" min="0" step="50" value="1000">
+            </div>
+          </div>
+
+          <div class="btnrow2 mt-2">
+            <button id="btnAddExtra" class="btn btn-primary w-100" type="button">Aggiungi</button>
+            <button id="btnClearExtra" class="btn btn-danger w-100" type="button">Svuota</button>
+          </div>
+
+          <div class="table-wrap mt-3" style="max-height:240px">
+            <table class="table">
+              <thead><tr><th>#</th><th>Data</th><th class="text-end">Importo</th><th class="text-center">Azioni</th></tr></thead>
+              <tbody id="extraList"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="tab-income">
+        <div class="cardx">
+          <div class="cardx-head">
+            <div>
+              <div class="cardx-title">Redditi</div>
+              <div class="cardx-sub">Entrate personali per cashflow</div>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div>
+              <label class="form-label" for="INC_FIXED">Fisso mensile (€)</label>
+              <input id="INC_FIXED" class="form-control" type="number" min="0" step="50" value="0">
+            </div>
+            <div>
+              <label class="form-label" for="INC_VAR">Variabile</label>
+              <input id="INC_VAR" class="form-control" type="number" min="0" step="50" value="0">
+            </div>
+          </div>
+
+          <div class="grid2 mt-2">
+            <div>
+              <label class="form-label" for="INC_MODE">Variabile: modalità</label>
+              <select id="INC_MODE" class="form-select">
+                <option value="flat" selected>€/mese</option>
+                <option value="pct">% del fisso</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" for="INC_START">Da data</label>
+              <input id="INC_START" class="form-control" type="date">
+            </div>
+          </div>
+
+          <div class="divider my-3"></div>
+
+          <div class="switches">
+            <label class="switch"><input id="CH_BAL" type="checkbox" checked> Debito residuo</label>
+            <label class="switch"><input id="CH_CUM" type="checkbox" checked> Cumulati</label>
+            <label class="switch"><input id="CH_CF" type="checkbox" checked> Cashflow</label>
+            <label class="switch"><input id="CH_BAR" type="checkbox"> Extra/anno</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="tab-invest">
+        <div class="cardx">
+          <div class="cardx-head">
+            <div>
+              <div class="cardx-title">Investimenti</div>
+              <div class="cardx-sub">Portafoglio che alimenta il cashflow</div>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="gridSpan2">
+              <label class="form-label" for="INV_NAME">Nome investimento</label>
+              <input id="INV_NAME" class="form-control" placeholder="es. BnB Lecce / Box auto / ETF">
+            </div>
+            <div>
+              <label class="form-label" for="INV_FIXED">Entrata fissa (€/mese)</label>
+              <input id="INV_FIXED" class="form-control" type="number" min="0" step="50" value="0">
+            </div>
+            <div>
+              <label class="form-label" for="INV_VAR">Entrata variabile</label>
+              <input id="INV_VAR" class="form-control" type="number" min="0" step="50" value="0">
+            </div>
+            <div>
+              <label class="form-label" for="INV_VAR_MODE">Variabile: modalità</label>
+              <select id="INV_VAR_MODE" class="form-select">
+                <option value="flat" selected>€/mese</option>
+                <option value="pct">% del fisso</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" for="INV_COST">Costi (€/mese)</label>
+              <input id="INV_COST" class="form-control" type="number" min="0" step="25" value="0">
+            </div>
+            <div>
+              <label class="form-label" for="INV_START">Da data</label>
+              <input id="INV_START" class="form-control" type="date">
+            </div>
+          </div>
+
+          <div class="btnrow2 mt-2">
+            <button id="btnAddInv" class="btn btn-primary w-100" type="button">Aggiungi</button>
+            <button id="btnClearInv" class="btn btn-danger w-100" type="button">Svuota</button>
+          </div>
+
+          <div class="table-wrap mt-3" style="max-height:240px">
+            <table class="table">
+              <thead><tr><th>#</th><th>Nome</th><th class="text-end">Entrate</th><th class="text-end">Costi</th><th class="text-end">Netto</th><th class="text-center">Azioni</th></tr></thead>
+              <tbody id="invList"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="tab-scen">
+        <div class="cardx">
+          <div class="cardx-head">
+            <div>
+              <div class="cardx-title">Scenari</div>
+              <div class="cardx-sub">Salva, carica e confronta</div>
+            </div>
+          </div>
+
+          <div class="btnrow2">
+            <button class="btn btn-ghost w-100" type="button" data-preset="base">Base</button>
+            <button class="btn btn-ghost w-100" type="button" data-preset="aggressive">Aggressivo</button>
+            <button class="btn btn-ghost w-100" type="button" data-preset="safe">Prudente</button>
+          </div>
+
+          <div class="divider my-3"></div>
+
+          <label class="form-label" for="SCEN_NAME">Nome scenario</label>
+          <input id="SCEN_NAME" class="form-control" placeholder="es. Lecce • extra 5k/anno">
+
+          <div class="btnrow2 mt-2">
+            <button id="btnSaveScenario" class="btn btn-success w-100" type="button">Salva</button>
+            <button id="btnDeleteScenario" class="btn btn-danger w-100" type="button">Elimina</button>
+          </div>
+
+          <div class="table-wrap mt-3" style="max-height:240px">
+            <table class="table">
+              <thead><tr><th>Scenario</th><th class="text-center">Carica</th></tr></thead>
+              <tbody id="scenarioList"></tbody>
+            </table>
+          </div>
+
+          <div class="divider my-3"></div>
+
+          <div class="grid2">
+            <div>
+              <label class="form-label" for="CMP_A">Scenario A</label>
+              <select id="CMP_A" class="form-select"></select>
+            </div>
+            <div>
+              <label class="form-label" for="CMP_B">Scenario B</label>
+              <select id="CMP_B" class="form-select"></select>
+            </div>
+          </div>
+
+          <button id="btnCompare" class="btn btn-primary w-100 mt-2" type="button">Confronta</button>
+        </div>
+      </div>
+
+      <div class="panel" id="tab-export">
+        <div class="cardx">
+          <div class="cardx-head">
+            <div>
+              <div class="cardx-title">Export</div>
+              <div class="cardx-sub">CSV / JSON / Stampa</div>
+            </div>
+          </div>
+
+          <div class="btnrow2">
+            <button id="btnCsv" class="btn btn-primary w-100" type="button">CSV</button>
+            <button id="btnJson" class="btn btn-ghost w-100" type="button">JSON</button>
+            <button id="btnPrint" class="btn btn-ghost w-100" type="button">Stampa / PDF</button>
+          </div>
+
+          <label class="form-label mt-3" for="jsonBox">JSON</label>
+          <textarea id="jsonBox" class="form-control mono" rows="7" placeholder="Premi JSON per esportare"></textarea>
+        </div>
+      </div>
+
+      <div class="sidebar-foot">
+        <div class="small text-muted">Desktop: tabella e grafici a destra. Mobile: scorri e usa nav.</div>
+      </div>
+    </aside>
+
+    <section class="content">
+      <div class="hero">
+        <div class="hero-left">
+          <div class="hero-title">Dashboard</div>
+          <div class="hero-sub" id="breakInfo">Break point: —</div>
+          <div class="hero-sub" id="bepInfo">Break-even: —</div>
+        </div>
+        <div class="hero-right">
+          <div class="pill" id="baseSummary">Baseline: —</div>
+          <div class="pill" id="portfolioInfo">Portfolio: —</div>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpiCard">
+          <div class="kpiLabel">Numero rate</div>
+          <div class="kpiValue"><span id="k_n">—</span><span id="d_n" class="delta neu">—</span></div>
+          <div class="kpiHint">vs baseline</div>
+        </div>
+        <div class="kpiCard">
+          <div class="kpiLabel">Rata periodica</div>
+          <div class="kpiValue"><span id="k_pmt">—</span><span id="d_pmt" class="delta neu">—</span></div>
+          <div class="kpiHint">vs baseline</div>
+        </div>
+        <div class="kpiCard">
+          <div class="kpiLabel">Totale interessi</div>
+          <div class="kpiValue"><span id="k_int">—</span><span id="d_int" class="delta neu">—</span></div>
+          <div class="kpiHint">vs baseline</div>
+        </div>
+        <div class="kpiCard">
+          <div class="kpiLabel">Totale pagato</div>
+          <div class="kpiValue"><span id="k_tot">—</span><span id="d_tot" class="delta neu">—</span></div>
+          <div class="kpiHint">vs baseline</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-head">
+          <div>
+            <div class="block-title">Grafici</div>
+            <div class="block-sub">Gestione e lettura rapida</div>
           </div>
         </div>
 
-        <div class="panel">
-          <div class="panel__title">Dettagli</div>
-          <div class="panel__body" id="outDettagli">
-            Inserisci i dati e premi <b>Calcola</b>.
+        <div class="chartGrid">
+          <div class="chartCard" id="cardBal">
+            <div class="chartTop">
+              <div>
+                <div class="chartTitle">Debito residuo</div>
+                <div class="chartSub">trend nel tempo</div>
+              </div>
+              <span class="badge mono" id="chBalLabel">ON</span>
+            </div>
+            <canvas id="chBalance" class="chart"></canvas>
+          </div>
+
+          <div class="chartCard" id="cardCum">
+            <div class="chartTop">
+              <div>
+                <div class="chartTitle">Cumulati</div>
+                <div class="chartSub">interessi vs capitale</div>
+              </div>
+              <span class="badge mono" id="chCumLabel">ON</span>
+            </div>
+            <canvas id="chCum" class="chart"></canvas>
+          </div>
+
+          <div class="chartCard" id="cardCF">
+            <div class="chartTop">
+              <div>
+                <div class="chartTitle">Cashflow</div>
+                <div class="chartSub">entrate vs uscite</div>
+              </div>
+              <span class="badge mono" id="chCfLabel">ON</span>
+            </div>
+            <canvas id="chCashflow" class="chart"></canvas>
+          </div>
+
+          <div class="chartCard" id="cardBar" style="display:none">
+            <div class="chartTop">
+              <div>
+                <div class="chartTitle">Extra per anno</div>
+                <div class="chartSub">somma extra annuale</div>
+              </div>
+              <span class="badge mono" id="chBarLabel">OFF</span>
+            </div>
+            <canvas id="chExtraBar" class="chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-head">
+          <div>
+            <div class="block-title">Tabella ammortamento</div>
+            <div class="block-sub">Scorri orizzontalmente su mobile</div>
+          </div>
+          <div class="block-actions">
+            <span class="pillSmall" id="totExtraNote">—</span>
           </div>
         </div>
 
-        <div class="panel">
-          <div class="panel__title">Ultimi 12 mesi (simulazione)</div>
-          <div class="panel__body tablewrap" id="outTabella"></div>
+        <div class="tableShell">
+          <div class="table-wrap" id="wrapTable">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th class="text-center">#</th>
+                  <th class="text-center">Data</th>
+                  <th class="text-center">Anno</th>
+                  <th class="text-center">Per</th>
+                  <th class="text-end">Debito i.</th>
+                  <th class="text-end">Rata</th>
+                  <th class="text-end">Int.</th>
+                  <th class="text-end">Cap.</th>
+                  <th class="text-end">Extra</th>
+                  <th class="text-end">Debito f.</th>
+                  <th class="text-end">Int. cum</th>
+                  <th class="text-end">Cap. cum</th>
+                  <th class="text-end">Cashflow</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyMain"></tbody>
+            </table>
+          </div>
         </div>
-      </aside>
+      </div>
+
+      <div class="block">
+        <div class="block-head">
+          <div>
+            <div class="block-title">Confronto scenari</div>
+            <div class="block-sub">A vs B (KPI + delta)</div>
+          </div>
+        </div>
+
+        <div class="compareGrid">
+          <div class="table-wrap" style="max-height:260px">
+            <table class="table table-compact">
+              <thead><tr><th>KPI</th><th class="text-end">Scenario A</th></tr></thead>
+              <tbody id="cmpLeft"></tbody>
+            </table>
+          </div>
+          <div class="table-wrap" style="max-height:260px">
+            <table class="table table-compact">
+              <thead><tr><th>KPI</th><th class="text-end">Scenario B</th><th class="text-end">Δ</th></tr></thead>
+              <tbody id="cmpRight"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="hint mt-2" id="cmpNote">Seleziona due scenari in “Scenari” e premi Confronta.</div>
+      </div>
+
+      <footer class="footer">
+        <span class="text-muted small">Offline • LocalStorage • UI v6</span>
+      </footer>
     </section>
-
-    <footer class="footer reveal">
-      <span>DashSte</span>
-      <span class="muted">• GitHub Pages •</span>
-      <span class="muted">Aggressivo, pulito, responsive.</span>
-    </footer>
   </main>
 
-  <script src="app.js"></script>
+  <nav class="bottomnav d-lg-none" aria-label="Navigazione">
+    <button class="bn active" data-tab="tab-main" type="button">Mutuo</button>
+    <button class="bn" data-tab="tab-extra" type="button">Extra</button>
+    <button class="bn" data-tab="tab-income" type="button">Redditi</button>
+    <button class="bn" data-tab="tab-invest" type="button">Inv.</button>
+    <button class="bn" data-tab="tab-scen" type="button">Scenari</button>
+    <button class="bn" data-tab="tab-export" type="button">Export</button>
+  </nav>
+
+  <script src="./app.js"></script>
+  <script src="./ui.js"></script>
 </body>
 </html>
