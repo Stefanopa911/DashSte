@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const APP_VERSION = "7.0";
+  const APP_VERSION = "8.0";
   const LS_KEY = "amm_enterprise_state_v7";
   const LS_SCEN = "amm_enterprise_scenarios_v7";
 
