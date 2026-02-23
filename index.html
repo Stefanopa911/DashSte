@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Piano Ammortamento Enterprise - Dashboard (Offline v4)</title>
+  <link rel="stylesheet" href="./bootstrap.min.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="container py-4">
+    <div class="header">
+      <div>
+        <h1 class="title">Piano ammortamento enterprise</h1>
+        <p class="subtitle">Dashboard offline • tabella unica • KPI + Δ • grafici • redditi • scenari</p>
+      </div>
+      <div class="pillbar">
+        <span class="chip"><span class="status-dot"></span><span id="statusText">JS: pronto</span><span id="jsLoaded" class="text-muted small"></span></span>
+        <span class="badge">max 30 anni</span>
+        <span class="badge">offline</span>
+        <span class="badge mono" id="ver">v4.0</span>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <!-- LEFT: controls -->
+      <div class="card">
+        <div class="card-body">
+          <div class="tabs mb-3" role="tablist" aria-label="Sezioni">
+            <button class="tab active" data-tab="tab-main" type="button">Mutuo</button>
+            <button class="tab" data-tab="tab-extra" type="button">Extra</button>
+            <button class="tab" data-tab="tab-income" type="button">Redditi</button>
+            <button class="tab" data-tab="tab-scen" type="button">Scenari</button>
+            <button class="tab" data-tab="tab-export" type="button">Export</button>
+          </div>
+
+          <!-- Mutuo -->
+          <div id="tab-main" class="panel active">
+            <div class="input-row">
+              <div>
+                <label class="form-label" for="P">Importo finanziato (€)</label>
+                <input id="P" class="form-control" type="number" min="0" step="100" value="200000">
+              </div>
+              <div>
+                <label class="form-label" for="APR">Tasso annuo nominale (%)</label>
+                <input id="APR" class="form-control" type="number" min="0" step="0.01" value="3.5">
+              </div>
+            </div>
+
+            <div class="input-row mt-2">
+              <div>
+                <label class="form-label" for="Y">Durata (anni) (1–30)</label>
+                <input id="Y" class="form-control" type="number" min="1" max="30" step="1" value="30">
+              </div>
+              <div>
+                <label class="form-label" for="m">Rate per anno</label>
+                <input id="m" class="form-control" type="number" min="1" step="1" value="12">
+              </div>
+            </div>
+
+            <div class="input-row mt-2">
+              <div>
+                <label class="form-label" for="START">Data prima rata</label>
+                <input id="START" class="form-control" type="date">
+                <div class="form-text">Serve per mese/anno reale in tabella e grafici.</div>
+              </div>
+              <div>
+                <label class="form-label" for="MODE">Modalità extra</label>
+                <select id="MODE" class="form-select">
+                  <option value="reduce_term" selected>Riduci DURATA (rata costante)</option>
+                  <option value="reduce_payment">Riduci RATA (durata fissa)</option>
+                </select>
+                <div class="form-text">Come applicare gli extra.</div>
+              </div>
+            </div>
+
+            <div class="splitline"></div>
+
+            <div class="toolbar">
+              <button id="btnCalc" class="btn btn-primary" type="button">Ricalcola</button>
+              <button id="btnReset" class="btn btn-ghost" type="button">Reset</button>
+              <button id="btnSave" class="btn btn-success" type="button">Salva</button>
+              <button id="btnLoad" class="btn btn-ghost" type="button">Carica</button>
+            </div>
+
+            <div id="err" class="alert alert-danger mt-3 d-none" role="alert"></div>
+
+            <div class="footer-note">
+              Tip: estrai lo ZIP e apri <span class="mono">index.html</span> dalla cartella estratta.
+            </div>
+          </div>
+
+          <!-- Extra -->
+          <div id="tab-extra" class="panel">
+            <div class="text-muted small mb-2">Extra annuo semplice (opzionale)</div>
+            <div class="input-row">
+              <div>
+                <label class="form-label" for="EX">Importo extra annuo (€)</label>
+                <input id="EX" class="form-control" type="number" min="0" step="50" value="0">
+              </div>
+              <div>
+                <label class="form-label" id="EXM_LABEL" for="EXM">Mese/Periodo extra</label>
+                <input id="EXM" class="form-control" type="number" min="1" step="1" value="12">
+              </div>
+            </div>
+            <div class="input-row mt-2">
+              <div>
+                <label class="form-label" for="EXY">Da anno n° (>=1)</label>
+                <input id="EXY" class="form-control" type="number" min="1" step="1" value="1">
+              </div>
+              <div>
+                <label class="form-label" for="EXEND">Fino ad anno n° (0=sempre)</label>
+                <input id="EXEND" class="form-control" type="number" min="0" step="1" value="0">
+              </div>
+            </div>
+
+            <div class="splitline"></div>
+
+            <div class="text-muted small mb-2">Extra personalizzati (lista)</div>
+            <div class="input-row">
+              <div>
+                <label class="form-label" for="EX_DATE">Data extra</label>
+                <input id="EX_DATE" class="form-control" type="date">
+              </div>
+              <div>
+                <label class="form-label" for="EX_AMT">Importo extra (€)</label>
+                <input id="EX_AMT" class="form-control" type="number" min="0" step="50" value="1000">
+              </div>
+            </div>
+            <div class="toolbar mt-2">
+              <button id="btnAddExtra" class="btn btn-primary" type="button">Aggiungi extra</button>
+              <button id="btnClearExtra" class="btn btn-danger" type="button">Svuota lista</button>
+            </div>
+
+            <div class="table-wrap mt-3" style="max-height:220px">
+              <table class="table">
+                <thead>
+                  <tr><th class="text-center">#</th><th>Data</th><th class="text-end">Importo</th><th class="text-center">Azioni</th></tr>
+                </thead>
+                <tbody id="extraList"></tbody>
+              </table>
+            </div>
+
+            <div class="footer-note">Gli extra personalizzati vengono applicati sulla prima rata successiva alla data indicata.</div>
+          </div>
+
+          <!-- Redditi -->
+          <div id="tab-income" class="panel">
+            <div class="text-muted small mb-2">Parametri entrate (per valutazione cashflow)</div>
+            <div class="input-row">
+              <div>
+                <label class="form-label" for="INC_FIXED">Reddito fisso mensile (€)</label>
+                <input id="INC_FIXED" class="form-control" type="number" min="0" step="50" value="0">
+              </div>
+              <div>
+                <label class="form-label" for="INC_VAR">Reddito variabile mensile (€)</label>
+                <input id="INC_VAR" class="form-control" type="number" min="0" step="50" value="0">
+              </div>
+            </div>
+            <div class="input-row mt-2">
+              <div>
+                <label class="form-label" for="INC_MODE">Variabile: modalità</label>
+                <select id="INC_MODE" class="form-select">
+                  <option value="flat" selected>Costante (sempre uguale)</option>
+                  <option value="pct">Percentuale del fisso</option>
+                </select>
+                <div class="form-text">Se “% del fisso”, variabile = percentuale.</div>
+              </div>
+              <div>
+                <label class="form-label" for="INC_START">Da data (inizio valutazione)</label>
+                <input id="INC_START" class="form-control" type="date">
+                <div class="form-text">Se vuota: usa la data prima rata.</div>
+              </div>
+            </div>
+
+            <div class="splitline"></div>
+            <div class="switch-row">
+              <label class="switch"><input id="CH_BAL" type="checkbox" checked> Debito residuo</label>
+              <label class="switch"><input id="CH_CUM" type="checkbox" checked> Interessi / Capitale cumulati</label>
+              <label class="switch"><input id="CH_CF" type="checkbox" checked> Cashflow vs rate</label>
+              <label class="switch"><input id="CH_BAR" type="checkbox"> Extra per anno</label>
+            </div>
+
+            <div class="footer-note">
+              I grafici si aggiornano automaticamente quando cambi input mutuo / extra / redditi.
+            </div>
+          </div>
+
+          <!-- Scenari -->
+          <div id="tab-scen" class="panel">
+            <div class="text-muted small mb-2">Scenari rapidi</div>
+            <div class="toolbar">
+              <button class="btn btn-ghost" type="button" data-preset="base">Base</button>
+              <button class="btn btn-ghost" type="button" data-preset="aggressive">Aggressivo</button>
+              <button class="btn btn-ghost" type="button" data-preset="safe">Prudente</button>
+            </div>
+            <div class="splitline"></div>
+            <label class="form-label" for="SCEN_NAME">Nome scenario</label>
+            <input id="SCEN_NAME" class="form-control" placeholder="es. Mutuo Lecce - extra 5k/anno">
+
+            <div class="toolbar mt-2">
+              <button id="btnSaveScenario" class="btn btn-success" type="button">Salva scenario</button>
+              <button id="btnDeleteScenario" class="btn btn-danger" type="button">Elimina</button>
+            </div>
+
+            <div class="table-wrap mt-3" style="max-height:260px">
+              <table class="table">
+                <thead><tr><th>Scenario</th><th class="text-center">Carica</th></tr></thead>
+                <tbody id="scenarioList"></tbody>
+              </table>
+            </div>
+
+            <div class="splitline"></div>
+            <div class="section-title">Confronta scenario</div>
+            <div class="text-muted small mb-2">Seleziona due scenari e confronta KPI (sotto la tabella).</div>
+            <div class="input-row">
+              <div>
+                <label class="form-label" for="CMP_A">Scenario A</label>
+                <select id="CMP_A" class="form-select"></select>
+              </div>
+              <div>
+                <label class="form-label" for="CMP_B">Scenario B</label>
+                <select id="CMP_B" class="form-select"></select>
+              </div>
+            </div>
+            <div class="toolbar mt-2">
+              <button id="btnCompare" class="btn btn-primary" type="button">Confronta</button>
+            </div>
+
+            <div class="footer-note">Gli scenari sono salvati nel browser (LocalStorage) → restano offline.</div>
+          </div>
+
+          <!-- Export -->
+          <div id="tab-export" class="panel">
+            <div class="text-muted small mb-2">Esporta e condividi</div>
+            <div class="toolbar">
+              <button id="btnCsv" class="btn btn-primary" type="button">Scarica CSV</button>
+              <button id="btnJson" class="btn btn-ghost" type="button">Esporta JSON</button>
+              <button id="btnPrint" class="btn btn-ghost" type="button">Stampa / PDF</button>
+            </div>
+            <div class="splitline"></div>
+            <div class="text-muted small">JSON (configurazione):</div>
+            <textarea id="jsonBox" class="form-control mono" rows="8" placeholder="Premi 'Esporta JSON'"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: table + KPIs + charts -->
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mb-2">
+            <div>
+              <h2 class="panel-title">Dashboard</h2>
+              <div id="breakInfo" class="small text-muted">Break point: —</div>
+              <div id="bepInfo" class="small text-muted">Break-even (capitale ≥ interessi): —</div>
+            </div>
+            <span class="badge" id="baseSummary">Baseline: —</span>
+          </div>
+
+          <div class="kpi-grid mb-3">
+            <div class="kpi">
+              <div class="kpi-title">Numero rate</div>
+              <div class="kpi-value"><span id="k_n">—</span><span id="d_n" class="delta neu">—</span></div>
+              <div class="kpi-sub">vs baseline</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-title">Rata periodica</div>
+              <div class="kpi-value"><span id="k_pmt">—</span><span id="d_pmt" class="delta neu">—</span></div>
+              <div class="kpi-sub">vs baseline</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-title">Totale interessi</div>
+              <div class="kpi-value"><span id="k_int">—</span><span id="d_int" class="delta neu">—</span></div>
+              <div class="kpi-sub">vs baseline</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-title">Totale pagato</div>
+              <div class="kpi-value"><span id="k_tot">—</span><span id="d_tot" class="delta neu">—</span></div>
+              <div class="kpi-sub">vs baseline</div>
+            </div>
+          </div>
+
+          <div class="section-title">Tabella ammortamento (unica)</div>
+          <div class="table-wrap" id="wrapTable">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th class="text-center">#</th>
+                  <th class="text-center">Data</th>
+                  <th class="text-center">Anno</th>
+                  <th class="text-center">Periodo</th>
+                  <th class="text-end">Debito iniziale</th>
+                  <th class="text-end">Rata</th>
+                  <th class="text-end">Interessi</th>
+                  <th class="text-end">Capitale</th>
+                  <th class="text-end">Extra</th>
+                  <th class="text-end">Debito finale</th>
+                  <th class="text-end">Int. cumulati</th>
+                  <th class="text-end">Cap. cumulato</th>
+                  <th class="text-end">Cashflow</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyMain"></tbody>
+            </table>
+          </div>
+
+          <div class="section-title mt-3">Grafici</div>
+          <div class="chart-grid" id="chartGrid">
+            <div class="chart-card" id="cardBal">
+              <div class="chart-head">
+                <div>
+                  <div class="chart-title">Debito residuo</div>
+                  <div class="chart-sub">andamento nel tempo</div>
+                </div>
+                <span class="badge mono" id="chBalLabel">ON</span>
+              </div>
+              <canvas id="chBalance" class="chart"></canvas>
+            </div>
+
+            <div class="chart-card" id="cardCum">
+              <div class="chart-head">
+                <div>
+                  <div class="chart-title">Cumulati</div>
+                  <div class="chart-sub">interessi vs capitale</div>
+                </div>
+                <span class="badge mono" id="chCumLabel">ON</span>
+              </div>
+              <canvas id="chCum" class="chart"></canvas>
+            </div>
+
+            <div class="chart-card" id="cardCF">
+              <div class="chart-head">
+                <div>
+                  <div class="chart-title">Cashflow</div>
+                  <div class="chart-sub">entrate (fisso+var) vs rata+extra</div>
+                </div>
+                <span class="badge mono" id="chCfLabel">ON</span>
+              </div>
+              <canvas id="chCashflow" class="chart"></canvas>
+            </div>
+
+            <div class="chart-card" id="cardBar" style="display:none">
+              <div class="chart-head">
+                <div>
+                  <div class="chart-title">Extra per anno</div>
+                  <div class="chart-sub">somma extra annuale</div>
+                </div>
+                <span class="badge mono" id="chBarLabel">OFF</span>
+              </div>
+              <canvas id="chExtraBar" class="chart"></canvas>
+            </div>
+          </div>
+
+          <div class="footer-note" id="totExtraNote"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compare BELOW -->
+    <div class="section-title mt-3">Confronto scenari</div>
+    <div class="mini-card">
+      <div class="text-muted small mb-2">Risultato confronto (A vs B)</div>
+      <div class="compare-grid">
+        <div class="table-wrap" style="max-height:260px">
+          <table class="table table-compact">
+            <thead><tr><th>KPI</th><th class="text-end">Scenario A</th></tr></thead>
+            <tbody id="cmpLeft"></tbody>
+          </table>
+        </div>
+        <div class="table-wrap" style="max-height:260px">
+          <table class="table table-compact">
+            <thead><tr><th>KPI</th><th class="text-end">Scenario B</th><th class="text-end">Δ</th></tr></thead>
+            <tbody id="cmpRight"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="footer-note" id="cmpNote">Seleziona due scenari in “Scenari → Confronta scenario”.</div>
+    </div>
+
+  </div>
+
+<script src="./app.js"></script>
+</body>
+</html>
